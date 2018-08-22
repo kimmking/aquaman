@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group 'io.github.kimmking'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+}
+
+dependencies {
+    compile "io.vertx:vertx-core:3.5.0"
+    compile "io.vertx:vertx-unit:3.5.0"
+    testCompile 'junit:junit:[4,)'
+}
+
+
+
