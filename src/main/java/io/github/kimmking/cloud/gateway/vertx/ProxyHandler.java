@@ -72,7 +72,7 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
                 }).setMaxConnTotal(4000)
                 .setMaxConnPerRoute(1000)
                 .setDefaultIOReactorConfig(ioConfig)
-                .setKeepAliveStrategy((response,context) -> 6000)
+                .setKeepAliveStrategy((response,context) -> 60000)
                 .build();
         httpclient.start();
     }
