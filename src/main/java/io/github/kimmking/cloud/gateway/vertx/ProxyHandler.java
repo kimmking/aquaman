@@ -1,25 +1,32 @@
 package io.github.kimmking.cloud.gateway.vertx;
 
-import io.netty.util.internal.StringUtil;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.Args;
+import org.apache.http.util.ByteArrayBuffer;
 import org.apache.http.util.EntityUtils;
 
+import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.concurrent.*;
 
 public class ProxyHandler implements Handler<HttpServerRequest> {
@@ -40,7 +47,7 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
     public ProxyHandler(String backendUrl){
         this.backendUrl = backendUrl.endsWith("/")?backendUrl.substring(0,backendUrl.length()-1):backendUrl;
         int cores = Runtime.getRuntime().availableProcessors() * 2;
-        long keepAliveTime = 0;
+        long keepAliveTime = 1000;
         int queueSize = 2048;
         RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardPolicy();
         fetchService = new ThreadPoolExecutor(cores, cores,
@@ -50,9 +57,10 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
                 keepAliveTime, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(queueSize),
                 new NamedThreadFactory("proxy-fetchWorker"), handler);
         IOReactorConfig ioConfig = IOReactorConfig.custom()
-                .setConnectTimeout(3000)
-                .setSoTimeout(3000)
-                .setIoThreadCount(Runtime.getRuntime().availableProcessors() * 2)
+                .setConnectTimeout(1000)
+                .setSoTimeout(1000)
+                .setIoThreadCount(cores)
+                .setRcvBufSize(4096)
                 .build();
 
         httpclient = HttpAsyncClients.custom()
@@ -64,13 +72,12 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
                 }).setMaxConnTotal(4000)
                 .setMaxConnPerRoute(1000)
                 .setDefaultIOReactorConfig(ioConfig)
+                .setKeepAliveStrategy((response,context) -> 6000)
                 .build();
         httpclient.start();
     }
 
-    /**
-     * @param event the event to handle
-     */
+
     @Override
     public void handle(HttpServerRequest request) {
         String url = this.backendUrl + request.path();
@@ -79,7 +86,8 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
 
     private void fetchGet(final HttpServerRequest inbound,final String url) {
         final HttpGet httpGet = new HttpGet(url);
-        httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
+        //httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);
+        httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_KEEP_ALIVE);
         httpclient.execute(httpGet, new FutureCallback<HttpResponse>() {
             @Override
             public void completed(final HttpResponse response) {
@@ -88,6 +96,7 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
                 } catch (Exception e) {
                     logger.error("fetch " + url +":", e);
                 } finally {
+
                 }
             }
 
@@ -107,14 +116,39 @@ public class ProxyHandler implements Handler<HttpServerRequest> {
     private void handleResponse(final HttpServerRequest inbound,final HttpResponse response) throws Exception {
         HttpServerResponse outbound = inbound.response();
         outbound.setStatusCode(response.getStatusLine().getStatusCode());
-        Arrays.asList(response.getAllHeaders()).forEach( e ->
-                outbound.putHeader(e.getName(),e.getValue())
-        );
 
-        String body = EntityUtils.toString(response.getEntity(), DEFAULT_CHARSET);
-        if (StringUtils.isEmpty(body)) {
-            outbound.end("NIL");
+        for (Header e : response.getAllHeaders()) {
+            outbound.putHeader(e.getName(),e.getValue());
         }
-        outbound.end(body);
+
+//        byte[] body = EntityUtils.toByteArray(response.getEntity());
+//        outbound.end(Buffer.buffer(body));
+
+        HttpEntity entity = response.getEntity();
+
+        Args.notNull(entity, "Entity");
+        final InputStream instream = entity.getContent();
+        if (instream == null) {
+            outbound.end();
+        }
+        try {
+            Args.check(entity.getContentLength() <= Integer.MAX_VALUE,
+                    "HTTP entity too large to be buffered in memory");
+            int i = (int)entity.getContentLength();
+            if (i < 0) {
+                i = 4096;
+            }
+            final Buffer buffer = Buffer.buffer(i);
+            final byte[] tmp = new byte[4096];
+            int l;
+            while((l = instream.read(tmp)) != -1) {
+                buffer.appendBytes(tmp, 0, l);
+            }
+            outbound.write(buffer);
+        } finally {
+            instream.close();
+            outbound.end();
+        }
+
     }
 }
