@@ -1,4 +1,4 @@
-package io.github.kimmking.cloud.gateway.vertx;
+package io.github.kimmking.cloud.gateway;
 
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;

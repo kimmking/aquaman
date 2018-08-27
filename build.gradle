@@ -6,15 +6,16 @@ plugins {
 
 group 'io.github.kimmking'
 version '1.0-SNAPSHOT'
-
+applicationName 'cloud-gateway'
+description 'A simple,flexible,high-perfermance gateway for MicroServices using Vert.X and Apache Httpcomponents(httpasyncclient).'
 
 sourceCompatibility = 1.8
 //mainClassName = 'io.vertx.core.Launcher'
-mainClassName='io.github.kimmking.cloud.gateway.vertx.GatewayApplication'
+mainClassName='io.github.kimmking.cloud.gateway.GatewayApplication'
 def vertxVersion = '3.5.0'
 def watchForChange = 'src/**/*'
 def doOnChange = './gradlew classes'
-def mainVerticleName = 'io.github.kimmking.cloud.gateway.vertx.GatewayApplication'
+def mainVerticleName = 'io.github.kimmking.cloud.gateway.GatewayApplication'
 
 
 repositories {

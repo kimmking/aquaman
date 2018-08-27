@@ -1,10 +1,14 @@
-package io.github.kimmking.cloud.gateway.vertx;
+package io.github.kimmking.cloud.gateway;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 
 
 public class GatewayApplication extends AbstractVerticle {
+
+    public final static String GATEWAY_NAME = "Cloud-Gateway for Vert.X";
+    public final static String GATEWAY_VERSION = "1.0.0";
+
     public static void main(String[] args) {
 
         System.setProperty("vertx.logger-delegate-factory-class-name",
@@ -16,10 +20,10 @@ public class GatewayApplication extends AbstractVerticle {
 
         int port = Integer.parseInt(proxyPort);
 
-        System.out.println("Vert.X starting...");
+        System.out.println(GATEWAY_NAME + " " + GATEWAY_VERSION +" starting...");
         Vertx.vertx().createHttpServer().
                 requestHandler(new ProxyHandler(proxyServer)).listen(port);
-        System.out.println("Vert.X started at port:" + port + " for server:" + proxyServer);
+        System.out.println(GATEWAY_NAME + " " + GATEWAY_VERSION +" started at port:" + port + " for server:" + proxyServer);
 
     }
 }

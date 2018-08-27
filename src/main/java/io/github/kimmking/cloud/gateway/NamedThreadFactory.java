@@ -1,4 +1,4 @@
-package io.github.kimmking.cloud.gateway.vertx;
+package io.github.kimmking.cloud.gateway;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
