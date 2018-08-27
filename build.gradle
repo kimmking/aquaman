@@ -1,27 +1,68 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 group 'io.github.kimmking'
 version '1.0-SNAPSHOT'
 
+
 sourceCompatibility = 1.8
+//mainClassName = 'io.vertx.core.Launcher'
+mainClassName='io.github.kimmking.cloud.gateway.vertx.GatewayApplication'
+def vertxVersion = '3.5.0'
+def watchForChange = 'src/**/*'
+def doOnChange = './gradlew classes'
+def mainVerticleName = 'io.github.kimmking.cloud.gateway.vertx.GatewayApplication'
+
 
 repositories {
     maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
 }
 
 dependencies {
-    compile "io.vertx:vertx-core:3.5.0"
-    compile "io.vertx:vertx-unit:3.5.0"
+    compile "io.vertx:vertx-core:$vertxVersion"
     compile "commons-lang:commons-lang:2.6"
     compile "org.apache.httpcomponents:httpclient:4.5.3"
     compile "org.apache.httpcomponents:httpcore:4.4.5"
     compile "org.apache.httpcomponents:httpasyncclient:4.1.3"
     compile "org.apache.httpcomponents:httpcore-nio:4.4.6"
     compile "com.alibaba:fastjson:1.2.47"
+    compile "log4j:log4j:1.2.17"
+    compile "org.apache.logging.log4j:log4j-api:2.8.2"
+    compile "org.apache.logging.log4j:log4j-core:2.8.2"
+    compile "org.slf4j:slf4j-api:1.7.21"
+    compile 'org.apache.directory.studio:org.slf4j.log4j12:1.7.2'
 
     testCompile 'junit:junit:[4,)'
+    testCompile "io.vertx:vertx-unit:$vertxVersion"
+
 }
 
 
+//shadowJar {
+jar{
+    classifier = 'fat'
+    manifest {
+        attributes "Main-Class": mainClassName, "Implementation-Title": "Gradle"
+        //attributes "Main-Verticle": mainVerticleName
+    }
+//    mergeServiceFiles {
+//        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+//    }
+}
+
+//run {
+//    args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
+//}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.9'
+}
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+// gradle shadowJar to build fat jar
+// gradle distShadowZip to build fat jar & script
