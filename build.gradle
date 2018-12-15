@@ -6,7 +6,7 @@ plugins {
 
 group 'io.github.kimmking'
 version '1.0-SNAPSHOT'
-applicationName 'cloud-gateway'
+//applicationName 'cloud-gateway-vertx'
 description 'A simple,flexible,high-perfermance gateway for MicroServices using Vert.X and Apache Httpcomponents(httpasyncclient).'
 
 sourceCompatibility = 1.8
