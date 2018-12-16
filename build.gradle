@@ -11,11 +11,11 @@ description 'A simple,flexible,high-perfermance gateway for MicroServices using 
 
 sourceCompatibility = 1.8
 //mainClassName = 'io.vertx.core.Launcher'
-mainClassName='io.github.kimmking.cloud.gateway.GatewayApplication'
+mainClassName='io.github.kimmking.aquaman.GatewayApplication'
 def vertxVersion = '3.5.0'
 def watchForChange = 'src/**/*'
 def doOnChange = './gradlew classes'
-def mainVerticleName = 'io.github.kimmking.cloud.gateway.GatewayApplication'
+def mainVerticleName = 'io.github.kimmking.aquaman.GatewayApplication'
 
 
 repositories {

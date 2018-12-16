@@ -1,4 +1,4 @@
-package io.github.kimmking.cloud.gateway;
+package io.github.kimmking.aquaman;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
@@ -6,7 +6,7 @@ import io.vertx.core.Vertx;
 
 public class GatewayApplication extends AbstractVerticle {
 
-    public final static String GATEWAY_NAME = "Cloud-Gateway for Vert.X";
+    public final static String GATEWAY_NAME = "AquamanGateway";
     public final static String GATEWAY_VERSION = "1.0.0";
 
     public static void main(String[] args) {

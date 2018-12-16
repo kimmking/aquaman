@@ -1,4 +1,4 @@
-package io.github.kimmking.cloud.gateway.router;
+package io.github.kimmking.aquaman.router;
 
 public interface Router<T,P> {
 

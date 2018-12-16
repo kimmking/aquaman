@@ -1,4 +1,4 @@
-package io.github.kimmking.cloud.gateway.filter;
+package io.github.kimmking.aquaman.filter;
 
 public enum FilterType {
 
