@@ -34,7 +34,7 @@ Plan:
 - \[x\]WebSocket support
 - \[x\]Authentication support
 - \[x\]Blacklist support
-
+- \[x\]Integration with other fx
 
 ## Benchmark
 
